@@ -369,6 +369,10 @@ def game_guesser():
 def game_creator():
     room = request.args.get('room')
     return render_template('game2/creator.html', room=room)
+    
+@app.route('/debug/templates')
+def debug_templates():
+    return str(os.listdir('templates/game2'))  # Должен показать ['guesser.html', 'creator.html']
 
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=int(os.environ.get('PORT', 5000)))

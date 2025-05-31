@@ -112,6 +112,11 @@ function leaveGame() {
     }
 }
 
+socket.on('redirect', (data) => {
+    console.log('Redirecting to:', data.url);  // Должно выводить /game2/guesser?room=ABC
+    window.location.href = data.url;
+});
+
 socket.on('redirect_guesser', (data) => {
   window.location.href = data.url;
 });
