@@ -60,7 +60,8 @@ function chooseRole(role) {
 }
 
 function canStartGame() {
-    return currentRoles.guesser && currentRoles.creator && 
+    return currentRoles.guesser && 
+           currentRoles.creator && 
            currentRoles.guesser !== currentRoles.creator;
 }
 
@@ -97,6 +98,11 @@ function startGame() {
     } else {
         alert('Необходимо чтобы один игрок был Угадывающим, а другой - Загадывающим!');
     }
+	// В функции startGame()
+	console.log('Attempting to start game in room:', room);
+	socket.emit('start_game', { room }, (response) => {
+		console.log('Server response:', response);
+	});
 }
 
 function leaveGame() {

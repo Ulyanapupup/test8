@@ -351,11 +351,14 @@ def handle_start_game(data):
     
     roles = room_roles[room]
     
-    if roles['guesser'] and roles['creator']:
-        emit('redirect_guesser', {'url': f'/game2/guesser?room={room}'}, to=roles['guesser'])
-        emit('redirect_creator', {'url': f'/game2/creator?room={room}'}, to=roles['creator'])
+    # Проверяем что роли распределены между разными игроками
+    if roles['guesser'] and roles['creator'] and roles['guesser'] != roles['creator']:
+        # Перенаправляем угадывающего
+        emit('redirect', {'url': f'/game2/guesser?room={room}'}, to=roles['guesser'])
+        # Перенаправляем загадывающего
+        emit('redirect', {'url': f'/game2/creator?room={room}'}, to=roles['creator'])
     else:
-        emit('error', {'message': 'Не все роли распределены'}, room=room)
+        emit('error', {'message': 'Оба игрока должны выбрать разные роли!'}, room=room)    
         
 @app.route('/game2/guesser')
 def game_guesser():
