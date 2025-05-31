@@ -113,8 +113,8 @@
     const pageSpan = document.getElementById("page-number");
 
     let currentPage = 0;
-    const pageSize = 1000; // 2001 чисел / 2 страницы
-    const allNumbers = Array.from({ length: 2001 }, (_, i) => i - 1000);
+    const pageSize = 100; // 2001 чисел / 2 страницы
+    const allNumbers = Array.from({ length: 201 }, (_, i) => i - 100);
     let dimmedNumbers = new Set();
 
     function sendMessage() {
