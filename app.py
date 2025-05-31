@@ -344,21 +344,30 @@ def handle_leave_game(data):
 @socketio.on('start_game')
 def handle_start_game(data):
     room = data['room']
+    print(f"\n=== DEBUG ===\nRoom roles for {room}: {room_roles.get(room)}\n=== END DEBUG ===")
+    session_id = session.get('session_id')  # Получаем текущую сессию
+    print(f"\n=== DEBUG ===\nSession ID: {session_id}\n=== END DEBUG ===")
     
     if room not in room_roles:
-        emit('error', {'message': 'Комната не существует'}, room=room)
-        return
+        emit('error', {'message': 'Комната не существует'})
+        return {'status': 'error', 'message': 'Room not found'}
     
-    roles = room_roles[room]
+    roles = room_roles.get(room, {})
     
     # Проверяем что роли распределены между разными игроками
-    if roles['guesser'] and roles['creator'] and roles['guesser'] != roles['creator']:
-        # Перенаправляем угадывающего
+    if roles.get('guesser') and roles.get('creator') and roles['guesser'] != roles['creator']:
+        # Отправляем подтверждение инициатору
+        emit('start_confirmation', {'status': 'success'}, to=session_id)
+        
+        # Перенаправляем игроков
         emit('redirect', {'url': f'/game2/guesser?room={room}'}, to=roles['guesser'])
-        # Перенаправляем загадывающего
         emit('redirect', {'url': f'/game2/creator?room={room}'}, to=roles['creator'])
+        
+        return {'status': 'ok'}
     else:
-        emit('error', {'message': 'Оба игрока должны выбрать разные роли!'}, room=room)    
+        msg = 'Оба игрока должны выбрать разные роли!'
+        emit('error', {'message': msg}, to=session_id)
+        return {'status': 'error', 'message': msg}
         
 @app.route('/game2/guesser')
 def game_guesser():

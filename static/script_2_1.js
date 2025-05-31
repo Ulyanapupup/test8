@@ -94,15 +94,24 @@ function updateUI() {
 
 function startGame() {
     if (canStartGame()) {
-        socket.emit('start_game', { room });
+        console.log('Attempting to start game in room:', room);
+        
+        socket.emit('start_game', { room }, (response) => {
+            if (response && response.status === 'ok') {
+                console.log('Game started successfully');
+            } else {
+                console.error('Start error:', response?.message || 'Unknown error');
+                alert(response?.message || 'Ошибка запуска игры');
+            }
+        });
+        
+        // Добавляем обработчик для перенаправления
+        socket.on('redirect', (data) => {
+            window.location.href = data.url;
+        });
     } else {
         alert('Необходимо чтобы один игрок был Угадывающим, а другой - Загадывающим!');
     }
-	// В функции startGame()
-	console.log('Attempting to start game in room:', room);
-	socket.emit('start_game', { room }, (response) => {
-		console.log('Server response:', response);
-	});
 }
 
 function leaveGame() {
@@ -114,6 +123,7 @@ function leaveGame() {
 
 socket.on('redirect', (data) => {
     console.log('Redirecting to:', data.url);  // Должно выводить /game2/guesser?room=ABC
+	console.log("=== DEBUG REDIRECT ===", data.url);
     window.location.href = data.url;
 });
 
