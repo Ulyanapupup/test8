@@ -31,6 +31,9 @@ rooms = {}
 #   }
 # }
 
+session_to_sid = {}  # сопоставление session_id -> socket.id
+
+
 def generate_session_id():
     return ''.join(random.choices(string.ascii_letters + string.digits, k=16))
 
@@ -238,18 +241,20 @@ def handle_message(msg):
 def handle_join_game_room(data):
     room = data['room']
     session_id = data['session_id']
-    
+    sid = request.sid
+
     join_room(room)
-    
+    session_to_sid[session_id] = sid  # сохраняем socket.id
+
     # Инициализация комнаты если её нет
     if room not in room_roles:
         room_roles[room] = {'guesser': None, 'creator': None}
-    
-    # Отправляем текущие роли новому игроку
+
     emit('roles_updated', {
         'roles': room_roles[room],
         'your_role': next((role for role, sid in room_roles[room].items() if sid == session_id), None)
-    }, to=session_id)
+    }, to=sid)
+
 
 @socketio.on('select_role')
 def handle_select_role(data):
@@ -344,28 +349,32 @@ def handle_leave_game(data):
 @socketio.on('start_game')
 def handle_start_game(data):
     room = data['room']
-    session_id = session.get('session_id')  # Получаем текущую сессию
-    
-    if room not in room_roles:
-        emit('error', {'message': 'Комната не существует'})
-        return {'status': 'error', 'message': 'Room not found'}
-    
+    session_id = session.get('session_id')
     roles = room_roles.get(room, {})
-    
-    # Проверяем что роли распределены между разными игроками
-    if roles.get('guesser') and roles.get('creator') and roles['guesser'] != roles['creator']:
-        # Отправляем подтверждение инициатору
-        emit('start_confirmation', {'status': 'success'}, to=session_id)
-        
-        # Перенаправляем игроков
-        emit('redirect', {'url': f'/game2/guesser?room={room}'}, to=roles['guesser'])
-        emit('redirect', {'url': f'/game2/creator?room={room}'}, to=roles['creator'])
-        
+
+    if not roles:
+        return {'status': 'error', 'message': 'Комната не существует'}
+
+    guesser_id = roles.get('guesser')
+    creator_id = roles.get('creator')
+
+    if guesser_id and creator_id and guesser_id != creator_id:
+        # Получаем socket.id каждого игрока
+        guesser_sid = session_to_sid.get(guesser_id)
+        creator_sid = session_to_sid.get(creator_id)
+
+        if not guesser_sid or not creator_sid:
+            return {'status': 'error', 'message': 'Один из игроков отключён'}
+
+        # Отправляем редирект каждому игроку
+        print(f"Sending redirect to guesser: {roles['guesser']}")
+        emit('redirect', {'url': f'/game2/guesser?room={room}'}, to=guesser_sid)
+        emit('redirect', {'url': f'/game2/creator?room={room}'}, to=creator_sid)
+
         return {'status': 'ok'}
     else:
-        msg = 'Оба игрока должны выбрать разные роли!'
-        emit('error', {'message': msg}, to=session_id)
-        return {'status': 'error', 'message': msg}
+        return {'status': 'error', 'message': 'Оба игрока должны выбрать разные роли!'}
+
         
 @app.route('/game2/guesser')
 def game_guesser():

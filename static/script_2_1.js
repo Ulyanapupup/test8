@@ -8,6 +8,22 @@ let currentRoles = { guesser: null, creator: null };
 // Подключение к комнате
 socket.emit('join_game_room', { room, session_id: sessionId });
 
+socket.on('redirect', (data) => {
+    console.log('Redirecting to:', data.url);  // Должно выводить /game2/guesser?room=ABC
+	console.log("=== DEBUG REDIRECT ===", data.url);
+    window.location.href = data.url;
+});
+
+socket.on('redirect_guesser', (data) => {
+	console.log('Redirecting guesser to:', data.url);
+	window.location.href = data.url;
+});
+
+socket.on('redirect_creator', (data) => {
+	console.log('Redirecting creator to:', data.url);
+	window.location.href = data.url;
+});
+
 // Обработчики событий
 socket.on('roles_updated', (data) => {
     console.log('Получены обновленные роли:', data);
@@ -104,11 +120,6 @@ function startGame() {
                 alert(response?.message || 'Ошибка запуска игры');
             }
         });
-        
-        // Добавляем обработчик для перенаправления
-        socket.on('redirect', (data) => {
-            window.location.href = data.url;
-        });
     } else {
         alert('Необходимо чтобы один игрок был Угадывающим, а другой - Загадывающим!');
     }
@@ -120,20 +131,6 @@ function leaveGame() {
         window.location.href = `/game?room=${room}`;
     }
 }
-
-socket.on('redirect', (data) => {
-    console.log('Redirecting to:', data.url);  // Должно выводить /game2/guesser?room=ABC
-	console.log("=== DEBUG REDIRECT ===", data.url);
-    window.location.href = data.url;
-});
-
-socket.on('redirect_guesser', (data) => {
-  window.location.href = data.url;
-});
-
-socket.on('redirect_creator', (data) => {
-  window.location.href = data.url;
-});
 
 // Инициализация
 document.addEventListener('DOMContentLoaded', () => {
