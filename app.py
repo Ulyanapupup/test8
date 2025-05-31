@@ -344,9 +344,7 @@ def handle_leave_game(data):
 @socketio.on('start_game')
 def handle_start_game(data):
     room = data['room']
-    print(f"\n=== DEBUG ===\nRoom roles for {room}: {room_roles.get(room)}\n=== END DEBUG ===")
     session_id = session.get('session_id')  # Получаем текущую сессию
-    print(f"\n=== DEBUG ===\nSession ID: {session_id}\n=== END DEBUG ===")
     
     if room not in room_roles:
         emit('error', {'message': 'Комната не существует'})

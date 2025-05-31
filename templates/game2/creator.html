@@ -1,43 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Загадывающий | Комната {{ room }}</title>
+  <title>Игрок: Загадывающий</title>
   <style>
-    body { background-color: #ffebee; font-family: Arial; }
-    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-    input, button { padding: 10px; margin: 5px 0; }
+    body {
+      background-color: darkgreen;
+      color: white;
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding-top: 50px;
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Вы - Загадывающий</h1>
-    <p>Комната: {{ room }}</p>
-    
-    <div id="secret-input">
-      <input type="number" id="secret-number" placeholder="Введите число">
-      <button id="set-secret">Загадать</button>
-    </div>
-
-    <div id="guesses-container">
-      <h3>Попытки соперника:</h3>
-      <div id="guesses"></div>
-    </div>
-  </div>
-
-  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-  <script>
-    const socket = io();
-    const room = "{{ room }}";
-
-    document.getElementById('set-secret').addEventListener('click', () => {
-      const number = document.getElementById('secret-number').value;
-      socket.emit('set_secret', { room, number });
-    });
-
-    socket.on('guess_received', (data) => {
-      const guessesDiv = document.getElementById('guesses');
-      guessesDiv.innerHTML += `<p>${data.guess} - ${data.hint}</p>`;
-    });
-  </script>
+  <h1>Ты — Загадывающий!</h1>
+  <p>Комната: {{ room }}</p>
+  <p>Загадай число. Жди вопросы от второго игрока.</p>
 </body>
 </html>
