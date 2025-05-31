@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Угадывающий | Комната {{ room }}</title>
+  <style>
+    body { background-color: #e8f5e9; font-family: Arial; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    input, button { padding: 10px; margin: 5px 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Вы - Угадывающий</h1>
+    <p>Комната: {{ room }}</p>
+    
+    <div id="guess-input">
+      <input type="number" id="guess-number" placeholder="Ваш вариант">
+      <button id="submit-guess">Проверить</button>
+    </div>
+
+    <div id="hints-container">
+      <h3>Подсказки:</h3>
+      <div id="hints"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <script>
+    const socket = io();
+    const room = "{{ room }}";
+
+    document.getElementById('submit-guess').addEventListener('click', () => {
+      const guess = document.getElementById('guess-number').value;
+      socket.emit('submit_guess', { room, guess });
+    });
+
+    socket.on('hint_received', (data) => {
+      const hintsDiv = document.getElementById('hints');
+      hintsDiv.innerHTML += `<p>${data.hint}</p>`;
+    });
+  </script>
+</body>
+</html>
